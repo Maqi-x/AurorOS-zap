@@ -13,10 +13,10 @@ An [AurorOS](https://github.com/Interpuce/AurorOS) distribution that aims to slo
 - PS/2 driver 
 - VGA driver
 - kernel panic
+- filesystem driver
 
 **Work in progress:**
-
-- filesystem driver
+- memory driver
 
 If you want to rewrite something to Zap, or improve already rewrited part of the OS, you can always create a pull request.
 
