@@ -66,6 +66,37 @@ pub fun init() {
     write(groups, "group {\n  name = sudo\n  desc = All users in this group will be able to use the sudo command.\n}\n\ngroup {\n  name = sudonopasswd\n  desc = All users in this group will be able to use the sudo command without the need to enter the user password.\n}", 243);
 }
 
+pub fun removeChild(parent: *emulated_fs_node, child: *emulated_fs_node) {
+    if (parent == null || child == null || parent.type != 1) { return; }
+
+    var found = 0;
+    for var i: UInt32 = 0; i < parent.child_count; i++ {
+        if (parent.children[i] == child) {
+            found = 1;
+        }
+        if (found == 1 && i < parent.child_count - 1) {
+            parent.children[i] = parent.children[i + 1];
+        }
+    }
+    if (found != 0) { parent.child_count = parent.child_count - 1; }
+}
+
+pub fun delete(node: *emulated_fs_node) {
+    if (node == null) { return; }
+
+    if (node.type == 1) {
+        while (node.child_count > 0) {
+            delete(node.children[0]);
+        }
+    }
+
+    if (node.parent != null) {
+        removeChild(node.parent, node);
+    }
+
+    fs_emulated.delete(node);
+}
+
 // C COMPATIBILTY LAYER
 // TODO: remove when the kernel is 100% in Zap 
 @{extern("C"), noMangle}
@@ -99,4 +130,12 @@ pub fun fs_find(dir: *emulated_fs_node, name: *Char) *emulated_fs_node {
 @{extern("C"), noMangle}
 pub fun init_fs() {
     init();
+}
+@{extern("C"), noMangle}
+pub fun fs_remove_child(parent: *emulated_fs_node, child: *emulated_fs_node) {
+    removeChild(parent, child);
+}
+@{extern("C"), noMangle}
+pub fun fs_delete(node: *emulated_fs_node) {
+    delete(node);
 }
